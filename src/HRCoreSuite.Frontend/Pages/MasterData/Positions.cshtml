@@ -1,0 +1,133 @@
+﻿@page
+@model HRCoreSuite.Frontend.Pages.MasterData.PositionsModel
+@{
+    ViewData["Title"] = "Master Data Jabatan";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<p>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#positionModal" id="addPositionBtn">
+        Tambah Jabatan Baru
+    </button>
+</p>
+
+<table class="table table-striped table-hover">
+    <thead class="thead-dark">
+        <tr>
+            <th>Nama Jabatan</th>
+            <th style="width: 150px;">Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var position in Model.Positions)
+        {
+            <tr>
+                <td>@position.Name</td>
+                <td>
+                    <button class="btn btn-sm btn-info edit-btn" data-id="@position.Id">Edit</button>
+                    <button class="btn btn-sm btn-danger delete-btn" data-id="@position.Id" data-name="@position.Name">Hapus</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="modal fade" id="positionModal" tabindex="-1" aria-labelledby="positionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="Save">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="positionModalLabel">Tambah Jabatan Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" asp-for="Position.Id" />
+                    @* <div asp-validation-summary="All" class="text-danger"></div> *@
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div class="mb-3">
+                        <label asp-for="Position.Name" class="form-label"></label>
+                        <input asp-for="Position.Name" class="form-control" />
+                        <span asp-validation-for="Position.Name" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="Delete">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin menghapus jabatan "<strong id="positionNameToDelete"></strong>"?</p>
+                    <input type="hidden" name="id" id="positionIdToDelete" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Hapus</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function () {
+
+            $('#addPositionBtn').on('click', function () {
+                $('#positionModal form')[0].reset();
+                $('#Position_Id').val('');
+                $('#positionModalLabel').text('Tambah Jabatan Baru');
+            });
+
+            $('.edit-btn').on('click', function () {
+                var positionId = $(this).data('id');
+                $('#positionModalLabel').text('Edit Jabatan');
+
+                $.ajax({
+                    url: '?handler=PositionForEdit&id=' + positionId,
+                    type: 'GET',
+                    success: function (data) {
+                        $('#Position_Id').val(data.id);
+                        $('#Position_Name').val(data.name);
+                        var positionModal = new bootstrap.Modal(document.getElementById('positionModal'));
+                        positionModal.show();
+                    },
+                    error: function() {
+                        alert('Gagal memuat data untuk diedit.');
+                    }
+                });
+            });
+
+            $('.delete-btn').on('click', function () {
+                var positionId = $(this).data('id');
+                var positionName = $(this).data('name');
+
+                $('#positionIdToDelete').val(positionId);
+                $('#positionNameToDelete').text(positionName);
+                var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+                deleteModal.show();
+            });
+
+            @if (TempData["ShowModalOnError"] as bool? == true)
+            {
+                <text>
+                    var positionModal = new bootstrap.Modal(document.getElementById('positionModal'));
+                    positionModal.show();
+                </text>
+            }
+        });
+    </script>
+}

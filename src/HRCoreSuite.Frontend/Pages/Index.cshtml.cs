@@ -1,7 +1,7 @@
 using HRCoreSuite.Frontend.Services;
-using HRCoreSuite.Frontend.ViewModels;
 using HRCoreSuite.Frontend.ViewModels.Branch;
 using HRCoreSuite.Frontend.ViewModels.Employee;
+using HRCoreSuite.Frontend.ViewModels.Position;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace HRCoreSuite.Frontend.Pages

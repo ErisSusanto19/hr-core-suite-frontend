@@ -1,0 +1,59 @@
+﻿@page
+@model HRCoreSuite.Frontend.Pages.UploadModel
+@{
+    ViewData["Title"] = "Upload Data Pegawai";
+}
+
+<h1>@ViewData["Title"]</h1>
+<p>Gunakan halaman ini untuk mengunggah data pegawai baru atau memperbarui data yang sudah ada menggunakan file Excel.</p>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                Formulir Unggah File
+            </div>
+            <div class="card-body">
+          
+                <form method="post" enctype="multipart/form-data">
+
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="form-group mb-3">
+                        <label asp-for="UploadedFile" class="form-label">Pilih File Excel</label>
+                        <input asp-for="UploadedFile" class="form-control" type="file" accept=".xlsx, .xls">
+                        <span asp-validation-for="UploadedFile" class="text-danger"></span>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Unggah File</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                Riwayat Unggahan Sesi Ini
+            </div>
+            <div class="card-body">
+                @if (Model.UploadResults.Any())
+                {
+                    <ul class="list-group">
+                        @foreach (var result in Model.UploadResults)
+                        {
+                            <li class="list-group-item">
+                                @result
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="card-text">Belum ada file yang diunggah pada sesi ini.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>

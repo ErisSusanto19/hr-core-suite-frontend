@@ -1,4 +1,5 @@
 using HRCoreSuite.Frontend.Handlers;
+using HRCoreSuite.Frontend.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
  
 var builder = WebApplication.CreateBuilder(args);
@@ -10,50 +11,55 @@ builder.Services.AddTransient<TokenHandler>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Login";
-        options.LogoutPath = "/Logout";
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
         options.AccessDeniedPath = "/AccessDenied";
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(60);
-        options.SlidingExpiration = true;
     });
 
-// Add services to the container.
 builder.Services.AddRazorPages()
     .AddRazorPagesOptions(options =>
     {
-        options.Conventions.AuthorizePage("/Index");
-        options.Conventions.AuthorizePage("/Upload");
+        options.Conventions.AuthorizeFolder("/");
+        options.Conventions.AllowAnonymousToPage("/Account/Login");
+        options.Conventions.AllowAnonymousToPage("/AccessDenied");
     });
 
-var backendApiUrl = builder.Configuration["BackendApiUrl"] ?? 
-                    throw new InvalidOperationException("BackendApiUrl is not configured.");
+var backendApiUrl = builder.Configuration["BackendApiUrl"] ?? throw new InvalidOperationException("BackendApiUrl is not configured.");
 
-var token = builder.Configuration["JwtToken"];
-
-builder.Services.AddHttpClient<HRCoreSuite.Frontend.Services.ApiClient>(client =>
+builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
 {
     client.BaseAddress = new Uri(backendApiUrl);
-})
-.AddHttpMessageHandler<TokenHandler>();
+});
+
+Action<HttpClient> configureClient = client =>
+{
+    client.BaseAddress = new Uri(backendApiUrl);
+};
+
+builder.Services.AddHttpClient<IEmployeeService, EmployeeService>(configureClient)
+    .AddHttpMessageHandler<TokenHandler>();
+
+builder.Services.AddHttpClient<IBranchService, BranchService>(configureClient)
+    .AddHttpMessageHandler<TokenHandler>();
+
+builder.Services.AddHttpClient<IPositionService, PositionService>(configureClient)
+    .AddHttpMessageHandler<TokenHandler>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-
+app.UseStaticFiles();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
-app.MapStaticAssets();
-app.MapRazorPages()
-   .WithStaticAssets();
+app.MapRazorPages();
 
 app.Run();

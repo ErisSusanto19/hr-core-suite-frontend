@@ -3,23 +3,22 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - HRCoreSuite.Frontend</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - HR Core Suite</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/HRCoreSuite.Frontend.styles.css" asp-append-version="true" />
 </head>
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container">
-                <a class="navbar-brand" asp-area="" asp-page="/Index">HRCoreSuite.Frontend</a>
+                <a class="navbar-brand" asp-area="" asp-page="/Index">HR Core Suite</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
                 <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                     <ul class="navbar-nav flex-grow-1">
+
+                    <ul class="navbar-nav flex-grow-1">
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
                             <li class="nav-item">
@@ -28,8 +27,19 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-page="/Upload">Upload Pegawai</a>
                             </li>
+
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle text-dark" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    Data Master
+                                </a>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" asp-area="" asp-page="/MasterData/Branches">Master Cabang</a></li>
+                                </ul>
+                            </li>
+
                         }
                     </ul>
+
                     <ul class="navbar-nav">
                         @if (User.Identity?.IsAuthenticated ?? false)
                         {
@@ -37,7 +47,7 @@
                                 <span class="nav-link text-dark">Hello, @User.Identity.Name!</span>
                             </li>
                             <li class="nav-item">
-                                <form class="form-inline" asp-page="/Logout" method="post">
+                                <form asp-page="/Account/Logout" method="post">
                                     <button type="submit" class="nav-link btn btn-link text-dark">Logout</button>
                                 </form>
                             </li>
@@ -45,7 +55,7 @@
                         else
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-page="/Login">Login</a>
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Account/Login">Login</a>
                             </li>
                         }
                     </ul>
@@ -61,7 +71,7 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2025 - HRCoreSuite.Frontend - <a asp-area="" asp-page="/Privacy">Privacy</a>
+            &copy; 2025 - HR Core Suite Frontend
         </div>
     </footer>
 

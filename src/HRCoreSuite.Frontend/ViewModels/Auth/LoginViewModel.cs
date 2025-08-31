@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace HRCoreSuite.Frontend.ViewModels
+namespace HRCoreSuite.Frontend.ViewModels.Auth
 {
     public class LoginViewModel
     {

@@ -6,7 +6,7 @@ namespace HRCoreSuite.Frontend.Pages
 {
     public class UploadModel : PageModel
     {
-        private readonly ApiClient _apiClient;
+         private readonly IEmployeeService _employeeService;
         private readonly ILogger<UploadModel> _logger;
  
         [BindProperty]
@@ -17,9 +17,9 @@ namespace HRCoreSuite.Frontend.Pages
 
         public List<string> UploadResults { get; set; } = new List<string>();
 
-        public UploadModel(ApiClient apiClient, ILogger<UploadModel> logger)
+        public UploadModel(EmployeeService employeeService, ILogger<UploadModel> logger)
         {
-            _apiClient = apiClient;
+            _employeeService = employeeService;
             _logger = logger;
         }
 
@@ -41,7 +41,7 @@ namespace HRCoreSuite.Frontend.Pages
 
             _logger.LogInformation("Attempting to upload file: {FileName}", UploadedFile.FileName);
 
-            var result = await _apiClient.UploadEmployeesAsync(UploadedFile);
+            var result = await _employeeService.UploadAsync(UploadedFile);
 
             TempDataMessage = $"File: '{result.FileName}' - Status: {(result.IsSuccess ? "Sukses" : "Gagal")} - Pesan: {result.Message}";
             _logger.LogInformation("Upload result: {Result}", TempDataMessage);

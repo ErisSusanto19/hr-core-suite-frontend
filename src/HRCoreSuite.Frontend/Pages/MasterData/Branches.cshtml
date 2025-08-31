@@ -1,0 +1,137 @@
+﻿@page
+@model HRCoreSuite.Frontend.Pages.MasterData.BranchesModel
+@{
+    ViewData["Title"] = "Master Data Cabang";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<p>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#branchModal" id="addBranchBtn">
+        Tambah Cabang Baru
+    </button>
+</p>
+
+<table class="table table-striped table-hover">
+    <thead class="thead-dark">
+        <tr>
+            <th>Nama Cabang</th>
+            <th style="width: 150px;">Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var branch in Model.Branches)
+        {
+            <tr>
+                <td>@branch.Name</td>
+                <td>
+                    <button class="btn btn-sm btn-info edit-btn" data-id="@branch.Id">Edit</button>
+                    <button class="btn btn-sm btn-danger delete-btn" data-id="@branch.Id" data-name="@branch.Name">Hapus</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<div class="modal fade" id="branchModal" tabindex="-1" aria-labelledby="branchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="Save">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="branchModalLabel">Tambah Cabang Baru</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" asp-for="Branch.Id" />
+                    
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Branch.Name" class="form-label"></label>
+                        <input asp-for="Branch.Name" class="form-control" />
+                        <span asp-validation-for="Branch.Name" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="deleteConfirmationModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="post" asp-page-handler="Delete">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Konfirmasi Hapus</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin menghapus cabang "<strong id="branchNameToDelete"></strong>"?</p>
+                    <input type="hidden" name="id" id="branchIdToDelete" />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-danger">Hapus</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+
+            $('#addBranchBtn').on('click', function () {
+                $('#branchModal form')[0].reset();
+                $('#Branch_Id').val('');
+                $('#branchModalLabel').text('Tambah Cabang Baru');
+            });
+
+            $('.edit-btn').on('click', function () {
+                var branchId = $(this).data('id');
+                
+                $('#branchModalLabel').text('Edit Cabang');
+
+                $.ajax({
+                    url: '?handler=BranchForEdit&id=' + branchId,
+                    type: 'GET',
+                    success: function (data) {
+                        $('#Branch_Id').val(data.id);
+                        $('#Branch_Name').val(data.name);
+
+                        var branchModal = new bootstrap.Modal(document.getElementById('branchModal'));
+                        branchModal.show();
+                    },
+                    error: function() {
+                        alert('Gagal memuat data untuk diedit.');
+                    }
+                });
+            });
+
+            $('.delete-btn').on('click', function () {
+                var branchId = $(this).data('id');
+                var branchName = $(this).data('name');
+
+                $('#branchIdToDelete').val(branchId);
+                $('#branchNameToDelete').text(branchName);
+
+                var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmationModal'));
+                deleteModal.show();
+            });
+
+            @if (TempData["ShowModalOnError"] as bool? == true)
+            {
+                <text>
+                    var branchModal = new bootstrap.Modal(document.getElementById('branchModal'));
+                    branchModal.show();
+                </text>
+            }
+        });
+    </script>
+}

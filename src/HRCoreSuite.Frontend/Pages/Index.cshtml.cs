@@ -1,5 +1,7 @@
 using HRCoreSuite.Frontend.Services;
+using HRCoreSuite.Frontend.Services.QueryParameters;
 using HRCoreSuite.Frontend.ViewModels.Branch;
+using HRCoreSuite.Frontend.ViewModels.Common;
 using HRCoreSuite.Frontend.ViewModels.Employee;
 using HRCoreSuite.Frontend.ViewModels.Position;
 using Microsoft.AspNetCore.Mvc;
@@ -14,9 +16,12 @@ namespace HRCoreSuite.Frontend.Pages
         private readonly IBranchService _branchService;
         private readonly IPositionService _positionService;
 
-        public IEnumerable<EmployeeViewModel> Employees { get; private set; } = Enumerable.Empty<EmployeeViewModel>();
-        public IEnumerable<BranchViewModel> Branches { get; private set; } = Enumerable.Empty<BranchViewModel>();
-        public IEnumerable<PositionViewModel> Positions { get; private set; } = Enumerable.Empty<PositionViewModel>();
+        [BindProperty(SupportsGet = true)]
+        public EmployeeQueryParameters QueryParams { get; set; } = new();
+        public PagedResponse<EmployeeViewModel> Employees { get; set; } = new();
+        public IEnumerable<EmployeeViewModel> ExpiringContracts { get; set; } = new List<EmployeeViewModel>();
+        public IEnumerable<BranchViewModel> Branches { get; set; } = new List<BranchViewModel>();
+        public IEnumerable<PositionViewModel> Positions { get; set; } = new List<PositionViewModel>();
 
         public string? ErrorMessage { get; private set; }
 
@@ -38,9 +43,10 @@ namespace HRCoreSuite.Frontend.Pages
 
             try
             {
-                var employeesTask = _employeeService.GetAllAsync();
+                var employeesTask = _employeeService.GetAllAsync(QueryParams);
                 var branchesTask = _branchService.GetAllAsync();
                 var positionsTask = _positionService.GetAllAsync();
+                var expiringContractsTask = _employeeService.GetExpiringContractsAsync();
 
                 await Task.WhenAll(employeesTask, branchesTask, positionsTask);
 

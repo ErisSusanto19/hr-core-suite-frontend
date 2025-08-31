@@ -26,9 +26,9 @@ namespace HRCoreSuite.Frontend.ViewModels.Employee
         public string PositionName { get; set; } = string.Empty;
 
         [JsonPropertyName("branchId")]
-        public Guid? BranchId { get; set; }
+        public Guid BranchId { get; set; }
 
         [JsonPropertyName("positionId")]
-        public Guid? PositionId { get; set; }
+        public Guid PositionId { get; set; }
     }
 }

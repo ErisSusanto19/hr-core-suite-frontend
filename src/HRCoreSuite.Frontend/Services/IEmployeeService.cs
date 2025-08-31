@@ -1,3 +1,4 @@
+using HRCoreSuite.Frontend.Services.QueryParameters;
 using HRCoreSuite.Frontend.ViewModels.Common;
 using HRCoreSuite.Frontend.ViewModels.Employee;
 
@@ -5,7 +6,7 @@ namespace HRCoreSuite.Frontend.Services
 {
     public interface IEmployeeService
     {
-        Task<IEnumerable<EmployeeViewModel>> GetAllAsync();
+        Task<PagedResponse<EmployeeViewModel>> GetAllAsync(EmployeeQueryParameters queryParams);
         Task<EmployeeViewModel?> GetByIdAsync(Guid id);
 
         Task<ServiceResult<EmployeeViewModel>> CreateAsync(EmployeeRequest employee);
@@ -13,5 +14,7 @@ namespace HRCoreSuite.Frontend.Services
         Task<bool> DeleteAsync(Guid id);
 
         Task<UploadResultViewModel> UploadAsync(IFormFile file);
+
+        Task<IEnumerable<EmployeeViewModel>> GetExpiringContractsAsync(int daysUntilExpiry = 30);
     }
 }

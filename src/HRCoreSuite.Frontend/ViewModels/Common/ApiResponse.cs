@@ -4,13 +4,18 @@ namespace HRCoreSuite.Frontend.ViewModels.Common
 {
     public class ApiResponse<T>
     {
-        [JsonPropertyName("success")]
-        public bool Success { get; init; }
+        public bool Success { get; }
 
-        [JsonPropertyName("data")]
-        public T? Data { get; init; }
+        public T? Data { get; }
 
-        [JsonPropertyName("errors")]
-        public object? Errors { get; init; }
+        public object? Errors { get; }
+
+        [JsonConstructor]
+        public ApiResponse(bool success, T? data, object? errors)
+        {
+            Success = success;
+            Data = data;
+            Errors = errors;
+        }
     }
 }

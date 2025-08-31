@@ -1,7 +1,9 @@
+using HRCoreSuite.Frontend.Services.QueryParameters;
 using HRCoreSuite.Frontend.ViewModels;
 using HRCoreSuite.Frontend.ViewModels.Common;
 using HRCoreSuite.Frontend.ViewModels.Employee;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.WebUtilities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Json;
@@ -20,17 +22,35 @@ namespace HRCoreSuite.Frontend.Services
             _logger = logger;
         }
 
-        public async Task<IEnumerable<EmployeeViewModel>> GetAllAsync()
+        public async Task<PagedResponse<EmployeeViewModel>> GetAllAsync(EmployeeQueryParameters queryParams)
         {
+            var query = new Dictionary<string, string?>
+            {
+                ["page"] = queryParams.Page.ToString(),
+                ["pageSize"] = queryParams.PageSize.ToString(),
+                ["search"] = queryParams.Search,
+                ["branchId"] = queryParams.BranchId?.ToString(),
+                ["positionId"] = queryParams.PositionId?.ToString(),
+                ["sortBy"] = queryParams.SortBy,
+                ["sortOrder"] = queryParams.SortOrder
+            };
+
+            var url = QueryHelpers.AddQueryString("/api/employee", query);
+
+            _logger.LogInformation("Attempting to GET from URL: {Url}", url);
+
             try
             {
-                var response = await _httpClient.GetFromJsonAsync<ApiResponse<PagedResponse<EmployeeViewModel>>>("/api/employee");
-                return response?.Data?.Data ?? Enumerable.Empty<EmployeeViewModel>();
+                var apiResponse = await _httpClient.GetFromJsonAsync<ApiResponse<PagedResponse<EmployeeViewModel>>>(url);
+
+                return (apiResponse?.Success == true && apiResponse.Data != null)
+                    ? apiResponse.Data
+                    : new PagedResponse<EmployeeViewModel>();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error fetching all employees.");
-                return Enumerable.Empty<EmployeeViewModel>();
+                _logger.LogError(ex, "Error fetching paged employees from URL: {Url}", url);
+                return new PagedResponse<EmployeeViewModel>();
             }
         }
 
@@ -128,10 +148,10 @@ namespace HRCoreSuite.Frontend.Services
                 {
                     var errorResponse = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
                     var errorMessage = errorResponse?.Errors?.ToString() ?? "Terjadi error yang tidak diketahui saat memperbarui data.";
-  
+
                     result.ErrorMessages.Add(errorMessage);
 
-                    _logger.LogWarning("Failed to update employee {EmployeeId}. Status: {StatusCode}. Reason: {Reason}", 
+                    _logger.LogWarning("Failed to update employee {EmployeeId}. Status: {StatusCode}. Reason: {Reason}",
                         id, response.StatusCode, errorMessage);
                 }
             }
@@ -162,5 +182,36 @@ namespace HRCoreSuite.Frontend.Services
             }
         }
 
+        public async Task<IEnumerable<EmployeeViewModel>> GetExpiringContractsAsync(int daysUntilExpiry = 30)
+        {
+            var url = $"/api/Employee/expiring-contracts?daysUntilExpiry={daysUntilExpiry}";
+            _logger.LogInformation("Attempting to GET from URL: {Url}", url);
+            try
+            {
+                // var apiResponse = await _httpClient.GetFromJsonAsync<ApiResponse<IEnumerable<EmployeeViewModel>>>(url);
+                // _logger.LogInformation("cek apiResponse: ", apiResponse);
+                // return (apiResponse?.Success == true && apiResponse.Data != null)
+                //     ? apiResponse.Data
+                //     : Enumerable.Empty<EmployeeViewModel>();
+
+                var jsonString = await _httpClient.GetStringAsync(url);
+    
+                _logger.LogInformation("--> RAW JSON for Expiring Contracts: {RawJson}", jsonString);
+
+                var options = new System.Text.Json.JsonSerializerOptions 
+                { 
+                    PropertyNameCaseInsensitive = true 
+                };
+                var apiResponse = System.Text.Json.JsonSerializer.Deserialize<ApiResponse<IEnumerable<EmployeeViewModel>>>(jsonString, options);
+
+                return apiResponse?.Data ?? Enumerable.Empty<EmployeeViewModel>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching expiring contracts from URL: {Url}", url);
+                return Enumerable.Empty<EmployeeViewModel>();
+            }
+        }
     }
+    
 }

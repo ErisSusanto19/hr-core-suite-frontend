@@ -11,65 +11,179 @@
 
 <hr />
 
+@{
+    var errorMessage = TempData["ErrorMessage"] as string;
+    var successMessage = TempData["SuccessMessage"] as string;
+}
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger" role="alert">
+        <strong>Error:</strong> @errorMessage
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success" role="alert">
+        @successMessage
+    </div>
+}
+
 <div class="mb-3">
     <a asp-page="/Employees/Manage" class="btn btn-primary">Tambah Pegawai Baru</a>
 </div>
 
-@if (!string.IsNullOrEmpty(Model.ErrorMessage))
-{
-    <div class="alert alert-danger" role="alert">
-        <strong>Error:</strong> @Model.ErrorMessage
+<div class="card bg-light mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Filter Pegawai</h5>
+        <form method="get" class="row g-3 align-items-center">
+            <div class="col-md-4">
+                <label class="visually-hidden" for="search">Cari</label>
+                <input asp-for="QueryParams.Search" class="form-control" placeholder="Cari NIP atau Nama..." />
+            </div>
+            <div class="col-md-3">
+                <label class="visually-hidden" for="branch">Cabang</label>
+                <select asp-for="QueryParams.BranchId" asp-items="@(new SelectList(Model.Branches, "Id", "Name"))" class="form-select">
+                    <option value="">-- Semua Cabang --</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="visually-hidden" for="position">Jabatan</label>
+                <select asp-for="QueryParams.PositionId" asp-items="@(new SelectList(Model.Positions, "Id", "Name"))" class="form-select">
+                    <option value="">-- Semua Jabatan --</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-info">Terapkan</button>
+            </div>
+        </form>
     </div>
+</div>
+
+<h3>Master Data Pegawai</h3>
+<table class="table table-striped table-hover table-sm">
+    <thead class="thead-dark">
+        <tr>
+            <th>No. Pegawai</th>
+            <th>
+                @{
+                    var nameSortOrder = "asc";
+                    if (Model.QueryParams.SortBy == "name" && Model.QueryParams.SortOrder == "asc")
+                    {
+                        nameSortOrder = "desc";
+                    }
+                }
+                <a asp-page="/Index"
+                    asp-route-QueryParams.Search="@Model.QueryParams.Search"
+                    asp-route-QueryParams.BranchId="@Model.QueryParams.BranchId"
+                    asp-route-QueryParams.PositionId="@Model.QueryParams.PositionId"
+                    asp-route-QueryParams.SortBy="name"
+                    asp-route-QueryParams.SortOrder="@nameSortOrder">Nama Pegawai</a>
+            </th>
+            <th>Nama Cabang</th>
+            <th>Jabatan</th>
+            <th>Mulai Kontrak</th>
+            <th>
+                @{
+                    var dateSortOrder = "asc";
+                    if (Model.QueryParams.SortBy == "contractEndDate" && Model.QueryParams.SortOrder == "asc")
+                    {
+                        dateSortOrder = "desc";
+                    }
+                }
+                <a asp-page="/Index"
+                    asp-route-QueryParams.Search="@Model.QueryParams.Search"
+                    asp-route-QueryParams.BranchId="@Model.QueryParams.BranchId"
+                    asp-route-QueryParams.PositionId="@Model.QueryParams.PositionId"
+                    asp-route-QueryParams.SortBy="contractEndDate"
+                    asp-route-QueryParams.SortOrder="@dateSortOrder">Selesai Kontrak</a>
+            </th>
+            <th>Aksi</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Employees?.Data != null && Model.Employees.Data.Any())
+        {
+            @foreach (var employee in Model.Employees.Data)
+            {
+                <tr>
+                    <td>@employee.EmployeeNumber</td>
+                    <td>@employee.Name</td>
+                    <td>@employee.BranchName</td>
+                    <td>@employee.PositionName</td>
+                    <td>@employee.ContractStartDate.ToString("dd MMM yyyy")</td>
+                    <td>@employee.ContractEndDate.ToString("dd MMM yyyy")</td>
+                    <td>
+                        <a asp-page="/Employees/Manage" asp-route-id="@employee.Id" class="btn btn-sm btn-info">Edit</a>
+                        <form method="post" asp-page-handler="Delete" style="display:inline;" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pegawai ini?');">
+                            <input type="hidden" name="id" value="@employee.Id" />
+                            <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="7" class="text-center">Tidak ada data pegawai yang cocok dengan filter Anda.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@if (Model.Employees?.TotalPages > 1)
+{
+    <nav>
+        <ul class="pagination">
+            @for (var i = 1; i <= Model.Employees.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.Employees.Page ? "active" : "")">
+                    <a class="page-link" asp-page="/Index"
+                        asp-route-QueryParams.Page="@i"
+                        asp-route-QueryParams.Search="@Model.QueryParams.Search"
+                        asp-route-QueryParams.BranchId="@Model.QueryParams.BranchId"
+                        asp-route-QueryParams.PositionId="@Model.QueryParams.PositionId"
+                        asp-route-QueryParams.SortBy="@Model.QueryParams.SortBy"
+                        asp-route-QueryParams.SortOrder="@Model.QueryParams.SortOrder">@i</a>
+                </li>
+            }
+        </ul>
+    </nav>
+}
+
+<hr />
+
+<h3>Pegawai dengan Kontrak Segera Berakhir</h3>
+@if (Model.ExpiringContracts != null && Model.ExpiringContracts.Any())
+{
+    <table class="table table-sm table-warning table-striped">
+        <thead class="thead-dark">
+            <tr>
+                <th>No. Pegawai</th>
+                <th>Nama Pegawai</th>
+                <th>Jabatan</th>
+                <th>Selesai Kontrak</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var employee in Model.ExpiringContracts)
+            {
+                <tr>
+                    <td>@employee.EmployeeNumber</td>
+                    <td>@employee.Name</td>
+                    <td>@employee.PositionName</td>
+                    <td>@employee.ContractEndDate.ToString("dd MMM yyyy")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
 else
 {
-    <div class="mb-5">
-        <h3>Master Data Pegawai</h3>
-        <table class="table table-striped table-hover table-sm">
-            <thead class="thead-dark">
-                <tr>
-                    <th>No. Pegawai</th>
-                    <th>Nama Pegawai</th>
-                    <th>Nama Cabang</th>
-                    <th>Jabatan</th>
-                    <th>Mulai Kontrak</th>
-                    <th>Selesai Kontrak</th>
-                </tr>
-            </thead>
-            <tbody>
-                @if (Model.Employees.Any())
-                {
-                    @foreach (var employee in Model.Employees)
-                    {
-                        <tr>
-                            <td>@employee.EmployeeNumber</td>
-                            <td>@employee.Name</td>
-                            <td>@employee.BranchName</td>
-                            <td>@employee.PositionName</td>
-                            <td>@employee.ContractStartDate.ToString("dd MMM yyyy")</td>
-                            <td>@employee.ContractEndDate.ToString("dd MMM yyyy")</td>
-                            <td>
-                                <a asp-page="/Employees/Manage" asp-route-id="@employee.Id" class="btn btn-sm btn-info">Edit</a>
-                                <form method="post" asp-page-handler="Delete" style="display:inline;">
-                                    <input type="hidden" name="id" value="@employee.Id" />
-                                    <button type="submit" class="btn btn-sm btn-danger" 
-                                            onclick="return confirm('Apakah Anda yakin ingin menghapus pegawai ini?');"> Hapus
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    }
-                }
-                else
-                {
-                    <tr>
-                        <td colspan="6" class="text-center">Tidak ada data pegawai yang ditemukan.</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
+    <p>Tidak ada pegawai yang kontraknya akan berakhir dalam waktu dekat.</p>
+}
     @* <div class="row">
         <div class="col-md-6">
             <h3>Master Data Cabang</h3>
@@ -130,4 +244,3 @@ else
             </table>
         </div>
     </div> *@
-}

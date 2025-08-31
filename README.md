@@ -94,6 +94,19 @@ The project will follow the standard ASP.NET Core Razor Pages structure to maint
 *   [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)
 *   The **HR-Core Suite Backend** application must be running.
 
+### One-Time Environment Setup (Important!)
+
+Before running the projects for the first time, you need to ensure your local machine trusts the .NET development SSL certificate. This is a one-time setup per machine.
+
+1.  Open your terminal/powershell **as an Administrator**.
+2.  Run the following command:
+    ```bash
+    dotnet dev-certs https --trust
+    ```
+3.  If prompted by a security dialog, click **Yes** to install the certificate.
+
+This command is required to allow the frontend to successfully connect to the backend API over a secure HTTPS connection during development.
+
 ### Setup
 
 1.  **Clone the repository:**

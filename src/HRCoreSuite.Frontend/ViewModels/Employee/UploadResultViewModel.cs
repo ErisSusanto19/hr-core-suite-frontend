@@ -1,5 +1,5 @@
 
-namespace HRCoreSuite.Frontend.ViewModels
+namespace HRCoreSuite.Frontend.ViewModels.Employee
 {
     public class UploadResultViewModel
     {

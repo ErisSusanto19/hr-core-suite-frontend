@@ -1,5 +1,8 @@
-using HRCoreSuite.Frontend.ViewModels;
 using HRCoreSuite.Frontend.ViewModels.Common;
+using System.Net.Http.Headers;
+using HRCoreSuite.Frontend.ViewModels.Auth;
+using HRCoreSuite.Frontend.ViewModels.Employee;
+using HRCoreSuite.Frontend.ViewModels;
 
 namespace HRCoreSuite.Frontend.Services
 {
@@ -12,6 +15,33 @@ namespace HRCoreSuite.Frontend.Services
         {
             _httpClient = httpClient;
             _logger = logger;
+        }
+
+        public async Task<LoginResponseDto?> LoginAsync(string username, string password)
+        {
+            var loginRequest = new LoginRequestDto { Username = username, Password = password };
+
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("/api/auth/login", loginRequest);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<LoginResponseDto>>();
+                    if (apiResponse != null && apiResponse.Success && apiResponse.Data != null)
+                    {
+                        return apiResponse.Data;
+                    }
+                }
+                
+                _logger.LogWarning("Login failed for username: {Username}. Status: {StatusCode}", username, response.StatusCode);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An exception occurred during login attempt for username: {Username}", username);
+                return null;
+            }
         }
 
         public async Task<IEnumerable<EmployeeViewModel>> GetEmployeesAsync()

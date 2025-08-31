@@ -11,6 +11,10 @@
 
 <hr />
 
+<div class="mb-3">
+    <a asp-page="/Employees/Manage" class="btn btn-primary">Tambah Pegawai Baru</a>
+</div>
+
 @if (!string.IsNullOrEmpty(Model.ErrorMessage))
 {
     <div class="alert alert-danger" role="alert">
@@ -44,6 +48,15 @@ else
                             <td>@employee.PositionName</td>
                             <td>@employee.ContractStartDate.ToString("dd MMM yyyy")</td>
                             <td>@employee.ContractEndDate.ToString("dd MMM yyyy")</td>
+                            <td>
+                                <a asp-page="/Employees/Manage" asp-route-id="@employee.Id" class="btn btn-sm btn-info">Edit</a>
+                                <form method="post" asp-page-handler="Delete" style="display:inline;">
+                                    <input type="hidden" name="id" value="@employee.Id" />
+                                    <button type="submit" class="btn btn-sm btn-danger" 
+                                            onclick="return confirm('Apakah Anda yakin ingin menghapus pegawai ini?');"> Hapus
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                     }
                 }
@@ -57,7 +70,7 @@ else
         </table>
     </div>
 
-    <div class="row">
+    @* <div class="row">
         <div class="col-md-6">
             <h3>Master Data Cabang</h3>
             <table class="table table-striped table-hover table-sm">
@@ -116,5 +129,5 @@ else
                 </tbody>
             </table>
         </div>
-    </div>
+    </div> *@
 }

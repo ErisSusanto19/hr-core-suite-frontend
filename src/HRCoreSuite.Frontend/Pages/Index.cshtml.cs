@@ -2,6 +2,7 @@ using HRCoreSuite.Frontend.Services;
 using HRCoreSuite.Frontend.ViewModels.Branch;
 using HRCoreSuite.Frontend.ViewModels.Employee;
 using HRCoreSuite.Frontend.ViewModels.Position;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace HRCoreSuite.Frontend.Pages
@@ -54,6 +55,22 @@ namespace HRCoreSuite.Frontend.Pages
                 _logger.LogError(ex, "An exception occurred while loading data for the Index page.");
                 ErrorMessage = "Gagal memuat data dari server. Silakan coba lagi nanti.";
             }
+        }
+
+        public async Task<IActionResult> OnPostDeleteAsync(Guid id)
+        {
+            bool isSuccess = await _employeeService.DeleteAsync(id);
+
+            if (isSuccess)
+            {
+                TempData["SuccessMessage"] = "Data pegawai berhasil dihapus.";
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Gagal menghapus data pegawai. Mungkin data sedang digunakan atau terjadi masalah koneksi.";
+            }
+
+            return RedirectToPage();
         }
     }
 }

@@ -1,0 +1,77 @@
+﻿@page "{id?}"
+@model HRCoreSuite.Frontend.Pages.Employees.ManageModel
+@{
+    ViewData["Title"] = Model.IsEditMode ? "Edit Pegawai" : "Tambah Pegawai Baru";
+}
+
+<h1>@ViewData["Title"]</h1>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+            @if (Model.IsEditMode)
+            {
+                <input type="hidden" asp-for="Employee.EmployeeNumber" />
+            }
+
+            <div class="mb-3">
+                <label asp-for="Employee.EmployeeNumber" class="form-label"></label>
+                <input asp-for="Employee.EmployeeNumber" class="form-control" disabled="@Model.IsEditMode" />
+                <span asp-validation-for="Employee.EmployeeNumber" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Employee.Name" class="form-label"></label>
+                <input asp-for="Employee.Name" class="form-control" />
+                <span asp-validation-for="Employee.Name" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <div class="mb-3">
+                        <label asp-for="Employee.ContractStartDate" class="form-label"></label>
+                        <input asp-for="Employee.ContractStartDate" class="form-control" />
+                        <span asp-validation-for="Employee.ContractStartDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="mb-3">
+                        <label asp-for="Employee.ContractEndDate" class="form-label"></label>
+                        <input asp-for="Employee.ContractEndDate" class="form-control" />
+                        <span asp-validation-for="Employee.ContractEndDate" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Employee.BranchId" class="form-label">Cabang</label>
+                <select asp-for="Employee.BranchId" asp-items="Model.BranchOptions" class="form-select">
+                    <option value="">-- Pilih Cabang --</option>
+                </select>
+                <span asp-validation-for="Employee.BranchId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Employee.PositionId" class="form-label">Jabatan</label>
+                <select asp-for="Employee.PositionId" asp-items="Model.PositionOptions" class="form-select">
+                    <option value="">-- Pilih Jabatan --</option>
+                </select>
+                <span asp-validation-for="Employee.PositionId" class="text-danger"></span>
+            </div>
+            
+            <hr />
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-primary">Simpan</button>
+                <a asp-page="/Index" class="btn btn-secondary">Batal</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

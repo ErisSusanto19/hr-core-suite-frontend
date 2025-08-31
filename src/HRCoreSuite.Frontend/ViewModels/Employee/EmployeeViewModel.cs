@@ -5,7 +5,7 @@ namespace HRCoreSuite.Frontend.ViewModels.Employee
     public class EmployeeViewModel
     {
         [JsonPropertyName("id")]
-        public Guid Id { get; set; }
+        public Guid? Id { get; set; }
 
         [JsonPropertyName("employeeNumber")]
         public string EmployeeNumber { get; set; } = string.Empty;
@@ -24,5 +24,11 @@ namespace HRCoreSuite.Frontend.ViewModels.Employee
 
         [JsonPropertyName("positionName")]
         public string PositionName { get; set; } = string.Empty;
+
+        [JsonPropertyName("branchId")]
+        public Guid? BranchId { get; set; }
+
+        [JsonPropertyName("positionId")]
+        public Guid? PositionId { get; set; }
     }
 }

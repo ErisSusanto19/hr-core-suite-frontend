@@ -12,7 +12,6 @@ namespace HRCoreSuite.Frontend.Services
     public class EmployeeService : IEmployeeService
     {
         private readonly HttpClient _httpClient;
-
         private readonly ILogger<EmployeeService> _logger;
 
         public EmployeeService(HttpClient httpClient, ILogger<EmployeeService> logger)
@@ -68,5 +67,100 @@ namespace HRCoreSuite.Frontend.Services
                 return new UploadResultViewModel { FileName = file.FileName, IsSuccess = false, Message = "Terjadi kesalahan koneksi saat mengunggah file." };
             }
         }
+
+        public async Task<EmployeeViewModel?> GetByIdAsync(Guid id)
+        {
+            try
+            {
+                var response = await _httpClient.GetFromJsonAsync<ApiResponse<EmployeeViewModel>>($"/api/employee/{id}");
+                return response?.Data;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error fetching employee with ID {EmployeeId}.", id);
+                return null;
+            }
+        }
+
+        public async Task<ServiceResult<EmployeeViewModel>> CreateAsync(EmployeeRequest employee)
+        {
+            var result = new ServiceResult<EmployeeViewModel>();
+
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync("/api/employee", employee);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var apiResponse = await response.Content.ReadFromJsonAsync<ApiResponse<EmployeeViewModel>>();
+                    result.Data = apiResponse?.Data;
+                }
+                else
+                {
+                    var errorResponse = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                    result.ErrorMessages.Add(errorResponse?.Errors?.ToString() ?? "Terjadi error yang tidak diketahui.");
+
+                    _logger.LogWarning("Failed to create employee. Status: {StatusCode}", response.StatusCode);
+                }
+            }
+            catch (Exception ex)
+            {
+                result.ErrorMessages.Add("Exception while creating a new employee.");
+                _logger.LogError(ex, "Exception while creating a new employee.");
+            }
+
+            return result;
+        }
+
+        public async Task<ServiceResult<bool>> UpdateAsync(Guid id, EmployeeRequest employee)
+        {
+            var result = new ServiceResult<bool>();
+
+            try
+            {
+                var response = await _httpClient.PutAsJsonAsync($"/api/employee/{id}", employee);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    result.Data = true;
+                }
+                else
+                {
+                    var errorResponse = await response.Content.ReadFromJsonAsync<ApiResponse<object>>();
+                    var errorMessage = errorResponse?.Errors?.ToString() ?? "Terjadi error yang tidak diketahui saat memperbarui data.";
+  
+                    result.ErrorMessages.Add(errorMessage);
+
+                    _logger.LogWarning("Failed to update employee {EmployeeId}. Status: {StatusCode}. Reason: {Reason}", 
+                        id, response.StatusCode, errorMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                result.ErrorMessages.Add("Terjadi kesalahan koneksi saat memperbarui data.");
+                _logger.LogError(ex, "Exception while updating employee {EmployeeId}.", id);
+            }
+
+            return result;
+        }
+
+        public async Task<bool> DeleteAsync(Guid id)
+        {
+            try
+            {
+                var response = await _httpClient.DeleteAsync($"/api/employee/{id}");
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("Failed to delete employee {EmployeeId}. Status: {StatusCode}", id, response.StatusCode);
+                }
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Exception while deleting employee {EmployeeId}.", id);
+                return false;
+            }
+        }
+
     }
 }

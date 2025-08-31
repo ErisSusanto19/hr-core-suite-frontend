@@ -43,26 +43,59 @@ This application will provide HR staff with a simple web portal to:
 
 This phase implements the following features as required by the test:
 
-*   [ ] **Data Display Page:**
+*   [x] **Data Display Page:**
     *   A single page that displays three distinct tables:
         *   Table for Employee Data.
         *   Table for Branch Data.
         *   Table for Position Data.
     *   Data is fetched directly from the backend API.
 
-*   [ ] **File Upload Page:**
+*   [x] **File Upload Page:**
     *   A dedicated form for uploading Excel files.
     *   The form will accept a file and submit it to the backend's `/api/employee/upload` endpoint.
 
-*   [ ] **Upload Result Display:**
+*   [x] **Upload Result Display:**
     *   A section or a separate page to display a list of files that have been successfully uploaded during the user's session.
 
 ---
+
+## Employee Data Upload
+
+The application supports bulk uploading of employee data using a specifically formatted Microsoft Excel file (`.xlsx`). Please adhere to the following structure to ensure successful processing.
+
+### File Format Requirements
+
+* **File Type:** The file must be a standard Excel workbook (`.xlsx`).
+* **Worksheet:** Data should be placed in the **first worksheet** of the workbook.
+* **Header:** The **first row** of the worksheet is reserved for headers and must match the column names specified below exactly (case-sensitive).
+
+### Column Structure
+
+| Column Header | Data Type | Required | Notes |
+| :--- | :--- | :--- | :--- |
+| `NIP` | Text | Yes | Unique employee identification number. |
+| `Nama` | Text | Yes | Full name of the employee. |
+| `TanggalMulaiKontrak` | Date | Yes | Format must be **`YYYY-MM-DD`**. |
+| `TanggalBerakhirKontrak`| Date | Yes | Format must be **`YYYY-MM-DD`**. |
+| `IDCabang` | GUID / Text | Yes | The exact GUID of the branch. Must exist in the Branch master data. |
+| `IDJabatan`| GUID / Text | Yes | The exact GUID of the position. Must exist in the Position master data. |
+
+### Sample Data
+
+| NIP | Nama | TanggalMulaiKontrak | TanggalBerakhirKontrak | IDCabang | IDJabatan |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| EMP-0001 | Dewi Lestari | 2025-05-01 | 2026-05-01 | 2ca86d76-039d-49a4-8ad3-08dde86d340f | f7dbe654-30f2-4c90-b44b-08dde86d6935 |
+| EMP-0002 | Budi Santoso | 2025-01-15 | 2027-01-15 | `(valid_branch_guid)` | `(valid_position_guid)` |
+
+**Note:** Ensure that the GUIDs for `IDCabang` and `IDJabatan` are valid and correspond to existing entries in their respective master data tables to avoid upload errors.
+
+-----
 
 ## Project Structure
 
 The project will follow the standard ASP.NET Core Razor Pages structure to maintain clarity and separation of concerns.
 
+```
 /hr-core-suite-frontend
 |-- src/
 | |-- HRCoreSuite.Frontend/
@@ -83,7 +116,7 @@ The project will follow the standard ASP.NET Core Razor Pages structure to maint
 | | |-- Program.cs
 |-- .gitignore
 |-- README.md
-
+```
 
 ---
 

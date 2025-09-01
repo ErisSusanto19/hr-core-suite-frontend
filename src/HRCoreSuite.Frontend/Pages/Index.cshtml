@@ -156,7 +156,18 @@
 <hr />
 
 <h3>Pegawai dengan Kontrak Segera Berakhir</h3>
-@if (Model.ExpiringContracts != null && Model.ExpiringContracts.Any())
+<div class="row g-3 align-items-center mb-3">
+    <div class="col-md-3">
+        <label for="expiryDaysSelect" class="visually-hidden">Pilih Periode Kontrak Berakhir</label>
+        <select id="expiryDaysSelect" class="form-select" asp-for="QueryParams.DaysUntilExpiry">
+            <option value="30">Berakhir dalam 30 hari</option>
+            <option value="60">Berakhir dalam 60 hari</option>
+            <option value="90">Berakhir dalam 90 hari</option>
+            <option value="7">Berakhir dalam 7 hari</option>
+        </select>
+    </div>
+</div>
+@if (Model.ExpiringContracts != null)
 {
     <table class="table table-sm table-warning table-striped">
         <thead class="thead-dark">
@@ -167,23 +178,80 @@
                 <th>Selesai Kontrak</th>
             </tr>
         </thead>
-        <tbody>
-            @foreach (var employee in Model.ExpiringContracts)
+        <tbody id="expiringContractsTbody">
+            @if (Model.ExpiringContracts.Any())
+            {
+                @foreach (var employee in Model.ExpiringContracts)
+                {
+                    <tr>
+                        <td>@employee.EmployeeNumber</td>
+                        <td>@employee.Name</td>
+                        <td>@employee.PositionName</td>
+                        <td>@employee.ContractEndDate.ToString("dd MMM yyyy")</td>
+                    </tr>
+                }
+            }
+            else
             {
                 <tr>
-                    <td>@employee.EmployeeNumber</td>
-                    <td>@employee.Name</td>
-                    <td>@employee.PositionName</td>
-                    <td>@employee.ContractEndDate.ToString("dd MMM yyyy")</td>
+                    <td colspan="4" class="text-center">Tidak ada pegawai yang kontraknya akan berakhir dalam waktu dekat.</td>
                 </tr>
             }
         </tbody>
     </table>
 }
-else
-{
-    <p>Tidak ada pegawai yang kontraknya akan berakhir dalam waktu dekat.</p>
+
+@section Scripts {
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const expirySelect = document.getElementById('expiryDaysSelect');
+        const tableBody = document.getElementById('expiringContractsTbody');
+
+        expirySelect.addEventListener('change', function () {
+            const days = this.value;
+            const url = `/api/Employee/expiring-contracts?daysUntilExpiry=${days}`;
+
+            tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Memuat data...</td></tr>';
+
+            fetch(url)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(apiResponse => {
+                    tableBody.innerHTML = ''; 
+
+                    if (apiResponse.success && apiResponse.data && apiResponse.data.length > 0) {
+                        apiResponse.data.forEach(employee => {
+                            const endDate = new Date(employee.contractEndDate);
+                            const formattedDate = endDate.toLocaleDateString('id-ID', {
+                                day: '2-digit', month: 'short', year: 'numeric'
+                            });
+
+                            const row = `<tr>
+                                <td>${employee.employeeNumber}</td>
+                                <td>${employee.name}</td>
+                                <td>${employee.positionName}</td>
+                                <td>${formattedDate}</td>
+                            </tr>`;
+                            tableBody.insertAdjacentHTML('beforeend', row);
+                        });
+                    } else {
+                        tableBody.innerHTML = '<tr><td colspan="4" class="text-center">Tidak ada data untuk periode ini.</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching expiring contracts:', error);
+                    tableBody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Gagal memuat data. Silakan coba lagi.</td></tr>';
+                });
+        });
+    });
+</script>
 }
+
     @* <div class="row">
         <div class="col-md-6">
             <h3>Master Data Cabang</h3>

@@ -188,23 +188,11 @@ namespace HRCoreSuite.Frontend.Services
             _logger.LogInformation("Attempting to GET from URL: {Url}", url);
             try
             {
-                // var apiResponse = await _httpClient.GetFromJsonAsync<ApiResponse<IEnumerable<EmployeeViewModel>>>(url);
-                // _logger.LogInformation("cek apiResponse: ", apiResponse);
-                // return (apiResponse?.Success == true && apiResponse.Data != null)
-                //     ? apiResponse.Data
-                //     : Enumerable.Empty<EmployeeViewModel>();
+                var apiResponse = await _httpClient.GetFromJsonAsync<ApiResponse<IEnumerable<EmployeeViewModel>>>(url);
+                return (apiResponse?.Success == true && apiResponse.Data != null)
+                    ? apiResponse.Data
+                    : Enumerable.Empty<EmployeeViewModel>();
 
-                var jsonString = await _httpClient.GetStringAsync(url);
-    
-                _logger.LogInformation("--> RAW JSON for Expiring Contracts: {RawJson}", jsonString);
-
-                var options = new System.Text.Json.JsonSerializerOptions 
-                { 
-                    PropertyNameCaseInsensitive = true 
-                };
-                var apiResponse = System.Text.Json.JsonSerializer.Deserialize<ApiResponse<IEnumerable<EmployeeViewModel>>>(jsonString, options);
-
-                return apiResponse?.Data ?? Enumerable.Empty<EmployeeViewModel>();
             }
             catch (Exception ex)
             {

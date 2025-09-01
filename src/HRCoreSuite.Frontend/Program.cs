@@ -60,6 +60,51 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.Map("/api/{**path}", async (HttpContext context, IHttpClientFactory clientFactory, ILoggerFactory loggerFactory) =>
+{
+    var client = clientFactory.CreateClient(nameof(IEmployeeService));
+
+    var path = context.Request.Path.ToString();
+    if (context.Request.QueryString.HasValue)
+    {
+        path += context.Request.QueryString.Value;
+    }
+
+    var backendRequest = new HttpRequestMessage(new HttpMethod(context.Request.Method), path);
+
+    foreach (var header in context.Request.Headers)
+    {
+        if (!header.Key.Equals("Host", StringComparison.OrdinalIgnoreCase))
+        {
+            backendRequest.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
+        }
+    }
+    
+    var backendResponse = await client.SendAsync(backendRequest, HttpCompletionOption.ResponseHeadersRead, context.RequestAborted);
+    
+    context.Response.StatusCode = (int)backendResponse.StatusCode;
+    
+    foreach (var header in backendResponse.Headers)
+    {
+        if (!header.Key.Equals("Host", StringComparison.OrdinalIgnoreCase) && !header.Key.Equals("Cookie", StringComparison.OrdinalIgnoreCase))
+        {
+            backendRequest.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
+        }
+    }
+
+    if (context.Request.Headers.TryGetValue("Cookie", out var cookieValues))
+    {
+        backendRequest.Headers.Add("Cookie", cookieValues.ToArray());
+    }
+
+    foreach (var header in backendResponse.Content.Headers)
+    {
+        context.Response.Headers[header.Key] = header.Value.ToArray();
+    }
+    
+    await backendResponse.Content.CopyToAsync(context.Response.Body);
+});
+
 app.MapRazorPages();
 
 app.Run();

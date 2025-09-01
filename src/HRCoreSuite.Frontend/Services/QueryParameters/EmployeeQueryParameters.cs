@@ -9,5 +9,7 @@ namespace HRCoreSuite.Frontend.Services.QueryParameters
         public Guid? PositionId { get; set; }
         public string? SortBy { get; set; }
         public string? SortOrder { get; set; }
+
+        public int DaysUntilExpiry { get; set; }
     }
 }

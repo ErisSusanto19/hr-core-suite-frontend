@@ -48,11 +48,12 @@ namespace HRCoreSuite.Frontend.Pages
                 var positionsTask = _positionService.GetAllAsync();
                 var expiringContractsTask = _employeeService.GetExpiringContractsAsync();
 
-                await Task.WhenAll(employeesTask, branchesTask, positionsTask);
+                await Task.WhenAll(employeesTask, branchesTask, positionsTask, expiringContractsTask);
 
                 Employees = employeesTask.Result;
                 Branches = branchesTask.Result;
                 Positions = positionsTask.Result;
+                ExpiringContracts = expiringContractsTask.Result;
 
                 _logger.LogInformation("Successfully loaded all data for the Index page.");
             }
